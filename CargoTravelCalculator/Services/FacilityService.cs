@@ -70,11 +70,6 @@ namespace CargoTravelCalculator.Services
 
                     _shipService.HandleShipArrival(ship, containers, port, warehouseA);
                 }
-
-                if (Settings.LogTravelInformation)
-                {
-                    Helper.WriteColorLine("Press enter to continue!", ConsoleColor.Green, false);
-                }
             }
 
             return hours;

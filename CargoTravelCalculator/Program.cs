@@ -33,7 +33,7 @@ namespace CargoTravelCalculator
 
             string option = "";
 
-            while (option != "q")
+            while (option.ToLower() != "q")
             {
                 Console.Clear();
                 Console.WriteLine("Welcome to Travel Calculator");
@@ -43,7 +43,7 @@ namespace CargoTravelCalculator
                 Console.WriteLine("2. Edit some variables.");
                 Console.WriteLine("q. Quit.\n");
 
-                option = Helper.ReadStringWithCondition("Option", "choose an option from above", (i) => !"123q".Contains(i));
+                option = Helper.ReadStringWithCondition("Option", "choose an option from above", (i) => !"123qQ".Contains(i));
 
                 if (option == "1")
                 {
@@ -74,7 +74,9 @@ namespace CargoTravelCalculator
                                 Console.Write("Sequence ");
                                 Helper.WriteColorLine($"[{i + 1}]", ConsoleColor.Blue, false);
                                 Console.Write($": {sequences[i].ToUpper()}, Total Hours: {hours}");
-                                Console.WriteLine();
+                                Console.WriteLine($"{(Settings.LogTravelInformation ? "\n" : "")}");
+
+
                             }
 
                             Helper.WriteColorLine("\nPress enter to continue!", ConsoleColor.Green, false);
@@ -86,7 +88,7 @@ namespace CargoTravelCalculator
                 {
                     string sOption = "";
 
-                    while (sOption != "g")
+                    while (sOption.ToLower() != "g")
                     {
                         Console.Clear();
                         Console.WriteLine("Which variable do you want to change?");
@@ -95,7 +97,7 @@ namespace CargoTravelCalculator
                         Console.WriteLine($"3. Log the travel information: [{(Settings.LogTravelInformation ? "Yes" : "No")}]");
                         Console.WriteLine("g. Go back.\n");
 
-                        sOption = Helper.ReadStringWithCondition("Option", "choose an option from above", (o) => !"123g".Contains(o));
+                        sOption = Helper.ReadStringWithCondition("Option", "choose an option from above", (o) => !"123gG".Contains(o));
 
                         switch (sOption)
                         {
