@@ -1,17 +1,28 @@
 using CargoTravelCalculator.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using CargoTravelCalculator.Helpers;
+using CargoTravelCalculator.Services.Interfaces;
 
 namespace CargoTravelCalculator.Services
 {
-    public class PortService
+    /// <inheritdoc cref="IPortService"/>
+    public class PortService : IPortService
     {
-        private readonly ShipService _shipService;
+        private readonly IShipService _shipService;
 
-        public PortService()
+        public PortService(IShipService shipService)
         {
-            _shipService = new ShipService();
+            _shipService = shipService;
+        }
+
+        public void InitializePort(Port port)
+        {
+            // initialize the number ships that the port needs
+            for (int i = 0; i < Settings.NumberOfShips; i++)
+            {
+                port.Ships.Add(new Ship { Id = $"Ship.{i + 1}" });
+            }
         }
 
         public List<Ship> GetShipsByState(Port port, TransportState[] states)
@@ -21,11 +32,13 @@ namespace CargoTravelCalculator.Services
 
         public void LoadShips(Port port)
         {
+            // load up the available ships if there are containers available
             port.Containers.ForEach(container =>
             {
                 _shipService.LoadShip(port.Ships.Find(t => t.State == TransportState.Waiting), container);
             });
 
+            // removes unloaded containers from the port
             port.Ships.ForEach(truck => port.Containers.RemoveAll(container => container == truck.Container));
         }
 
@@ -33,14 +46,6 @@ namespace CargoTravelCalculator.Services
         {
             port.Containers.Clear();
             port.Ships.Clear();
-        }
-
-        public void PrintCurrentState(Port port)
-        {
-            foreach (Ship ship in port.Ships)
-            {
-                Console.WriteLine($"Ship:  {ship.Id,-8} State: {ship.State,-10} Start-EndPoint: {ship.StartEndPoint}");
-            }
         }
     }
 }

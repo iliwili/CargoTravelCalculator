@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
+using CargoTravelCalculator.Helpers;
 using CargoTravelCalculator.Models;
+using CargoTravelCalculator.Services.Interfaces;
 
 namespace CargoTravelCalculator.Services
 {
-    public class ShipService
+    /// <inheritdoc cref="IShipService"/>
+    public class ShipService : IShipService
     {
-        public bool HasArrived(Ship ship, int totalHours)
-        {
-            return (totalHours - ship.HoursMoving) == 0;
-        }
-
         public void LoadShip(Ship ship, Container container)
         {
             if (ship != null)
@@ -28,12 +28,27 @@ namespace CargoTravelCalculator.Services
             ship.Container = null;
         }
 
-        public void ResetShip(Ship ship)
+        public void HandleShipArrival(Ship ship, List<Container> containers, Port port, Warehouse warehouse)
         {
-            ship.CameFrom = "P";
-            ship.GoTo = "";
-            ship.State = TransportState.Waiting;
-            ship.HoursMoving = 0;
+            // checking if the ship arrived at the destination
+            if (Settings.StartEndPointMap.FirstOrDefault(t => t.Key == ship.StartEndPoint).Value - ship.HoursMoving == 0)
+            {
+                var container = ship.Container;
+                switch (ship.GoTo)
+                {
+                    case "A":
+                        warehouse.Containers.Add(container);
+                        UnloadShip(ship);
+                        containers.Remove(container);
+                        break;
+                    case "P":
+                        ship.CameFrom = "P";
+                        ship.GoTo = "";
+                        ship.State = TransportState.Waiting;
+                        ship.HoursMoving = 0;
+                        break;
+                }
+            }
         }
     }
 }

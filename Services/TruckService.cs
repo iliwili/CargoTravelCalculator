@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
+using CargoTravelCalculator.Helpers;
 using CargoTravelCalculator.Models;
+using CargoTravelCalculator.Services.Interfaces;
 
 namespace CargoTravelCalculator.Services
 {
-    public class TruckService
+    /// <inheritdoc cref="ITruckService"/>
+    public class TruckService : ITruckService
     {
-        public bool HasArrived(Truck truck, int totalHours)
-        {
-            return (totalHours - truck.HoursMoving) == 0;
-        }
-
         public void LoadTruck(Truck truck, Container container)
         {
             if (truck != null)
@@ -28,12 +28,31 @@ namespace CargoTravelCalculator.Services
             truck.Container = null;
         }
 
-        public void ResetTruck(Truck truck)
+        public void HandleTruckArrival(Truck truck, List<Container> containers, Port port, Warehouse warehouse)
         {
-            truck.CameFrom = "F";
-            truck.GoTo = "";
-            truck.State = TransportState.Waiting;
-            truck.HoursMoving = 0;
+            // checking if the truck arrived at the destination
+            if (Settings.StartEndPointMap.FirstOrDefault(t => t.Key == truck.StartEndPoint).Value - truck.HoursMoving == 0)
+            {
+                var container = truck.Container;
+                switch (truck.GoTo)
+                {
+                    case "P":
+                        port.Containers.Add(container);
+                        UnloadTruck(truck);
+                        break;
+                    case "B":
+                        warehouse.Containers.Add(container);
+                        UnloadTruck(truck);
+                        containers.Remove(container);
+                        break;
+                    case "F":
+                        truck.CameFrom = "F";
+                        truck.GoTo = "";
+                        truck.State = TransportState.Waiting;
+                        truck.HoursMoving = 0;
+                        break;
+                }
+            }
         }
     }
 }

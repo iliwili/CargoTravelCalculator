@@ -3,44 +3,24 @@ using System.Collections.Generic;
 using CargoTravelCalculator.Models;
 using System.Threading;
 using CargoTravelCalculator.Helpers;
+using CargoTravelCalculator.Services.Interfaces;
 
 namespace CargoTravelCalculator.Services
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class FacilityService
+    /// <inheritdoc cref="IFacilityService"/>
+    public class FacilityService : IFacilityService
     {
-        private readonly TransportService _transportService;
-        private readonly FactoryService _factoryService;
-        private readonly PortService _portService;
+        private readonly IFactoryService _factoryService;
+        private readonly IPortService _portService;
+        private readonly ITruckService _truckService;
+        private readonly IShipService _shipService;
 
-        public FacilityService()
+        public FacilityService(IFactoryService factoryService, IPortService portService, ITruckService truckService, IShipService shipService)
         {
-            _factoryService = new FactoryService();
-            _portService = new PortService();
-            _transportService = new TransportService();
-        }
-        public void InitializeTransport(Factory factory, Port port, int numberOfTrucks = 2, int numberOfShips = 1)
-        {
-            for (int i = 0; i < numberOfTrucks; i++)
-            {
-                factory.Trucks.Add(new Truck { Id = $"Truck.{i + 1}" });
-            }
-
-            for (int i = 0; i < numberOfShips; i++)
-            {
-                port.Ships.Add(new Ship { Id = $"Ship.{i + 1}" });
-            }
-        }
-
-        public void InitializeContainers(char[] cargo, List<Container> containers, Factory factory)
-        {
-            for (int i = 0; i < cargo.Length; i++)
-            {
-                containers.Add(new Container { Id = i, Destination = cargo[i].ToString().ToUpper() });
-            }
-            factory.Containers.AddRange(containers);
+            _factoryService = factoryService;
+            _portService = portService;
+            _truckService = truckService;
+            _shipService = shipService;
         }
 
         public int CalculateCargoTravelTime(char[] cargo, List<Container> containers, Factory factory, Port port, Warehouse warehouseA, Warehouse warehouseB)
@@ -48,44 +28,69 @@ namespace CargoTravelCalculator.Services
             _factoryService.ResetFactory(factory);
             _portService.ResetPort(port);
 
-            InitializeTransport(factory, port, Settings.NumberOfTrucks, Settings.NumberOfShips);
-            InitializeContainers(cargo, containers, factory);
+            // initialize containers
+            for (int i = 0; i < cargo.Length; i++)
+            {
+                containers.Add(new Container { Id = i, Destination = cargo[i].ToString().ToUpper() });
+            }
 
+            // initialize facilities
+            _factoryService.InitializeFactory(factory, containers);
+            _portService.InitializePort(port);
+
+            // calculate travel time
             int hours = 0;
             while (containers.Count != 0)
             {
                 hours++;
+
+                // log the facility states
                 if (Settings.LogTravelInformation)
                 {
-                    LogFacilityStates(factory, port);
+                    LogFacilityTransportStates(factory, port);
                     Thread.Sleep(500);
                 }
 
+                // load up the trucks and ships if there are containers available
                 _factoryService.LoadTrucks(factory);
                 _portService.LoadShips(port);
 
+                // handle the arrival of the trucks
                 foreach (Truck truck in _factoryService.GetTrucksByState(factory, new[] { TransportState.Delivering, TransportState.Returning }))
                 {
                     truck.HoursMoving++;
 
-                    _transportService.HandleTruckArrival(truck, containers, port, warehouseB);
+                    _truckService.HandleTruckArrival(truck, containers, port, warehouseB);
                 }
 
+                // handle the arrival of the ships
                 foreach (Ship ship in _portService.GetShipsByState(port, new[] { TransportState.Delivering, TransportState.Returning }))
                 {
                     ship.HoursMoving++;
 
-                    _transportService.HandleShipArrival(ship, containers, port, warehouseA);
+                    _shipService.HandleShipArrival(ship, containers, port, warehouseA);
+                }
+
+                if (Settings.LogTravelInformation)
+                {
+                    Helper.WriteColorLine("Press enter to continue!", ConsoleColor.Green, false);
                 }
             }
 
             return hours;
         }
 
-        public void LogFacilityStates(Factory factory, Port port)
+        public void LogFacilityTransportStates(Factory factory, Port port)
         {
-            _factoryService.PrintCurrentState(factory);
-            _portService.PrintCurrentState(port);
+            foreach (Truck truck in factory.Trucks)
+            {
+                Console.WriteLine(
+                    $"Truck: {truck.Id,-8} State: {truck.State,-10} Start-EndPoint: {truck.StartEndPoint}");
+            }
+            foreach (Ship ship in port.Ships)
+            {
+                Console.WriteLine($"Ship:  {ship.Id,-8} State: {ship.State,-10} Start-EndPoint: {ship.StartEndPoint}");
+            }
             Console.WriteLine();
         }
     }

@@ -1,8 +1,11 @@
-using System;
-using System.ComponentModel;
-
 namespace CargoTravelCalculator.Models
 {
+    /// <summary>
+    /// Transport is a parent class that represent a thing used for transporting goods.
+    /// </summary>
+    /// <remarks>
+    /// In this project transport can be a Truck or a Ship.
+    /// </remarks>
     public class Transport
     {
         public string Id { get; set; }
@@ -14,7 +17,6 @@ namespace CargoTravelCalculator.Models
         public string StartEndPoint
         {
             get => $"{CameFrom}-{GoTo}";
-            set => StartEndPoint = value;
         }
 
         public Transport()

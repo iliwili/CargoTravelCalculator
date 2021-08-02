@@ -4,15 +4,26 @@ using System.Linq;
 using CargoTravelCalculator.Helpers;
 using CargoTravelCalculator.Models;
 using CargoTravelCalculator.Services;
+using CargoTravelCalculator.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CargoTravelCalculator
 {
     class Program
     {
-        public static FacilityService FacilityService = new();
-
         static void Main(string[] args)
         {
+            // creating 
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<IFacilityService, FacilityService>()
+                .AddSingleton<IFactoryService, FactoryService>()
+                .AddSingleton<IPortService, PortService>()
+                .AddSingleton<IShipService, ShipService>()
+                .AddSingleton<ITruckService, TruckService>()
+                .BuildServiceProvider();
+
+            var facilityService = serviceProvider.GetService<IFacilityService>();
+
             Factory factory = new Factory();
             Port port = new Port();
             Warehouse warehouseA = new Warehouse();
@@ -58,7 +69,7 @@ namespace CargoTravelCalculator
 
                             for (int i = 0; i < sequences.Length; i++)
                             {
-                                int hours = FacilityService.CalculateCargoTravelTime(sequences[i].ToArray(), containers, factory, port, warehouseA, warehouseB);
+                                int hours = facilityService.CalculateCargoTravelTime(sequences[i].ToArray(), containers, factory, port, warehouseA, warehouseB);
 
                                 Console.Write("Sequence ");
                                 Helper.WriteColorLine($"[{i + 1}]", ConsoleColor.Blue, false);
