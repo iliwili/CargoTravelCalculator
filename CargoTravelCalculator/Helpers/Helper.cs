@@ -8,7 +8,7 @@ namespace CargoTravelCalculator.Helpers
     /// </summary>
     public class Helper
     {
-        public static Regex SequenceRegex = new Regex(@"^((?![c-zC-Z]).)*$");
+        public static readonly Regex SequenceRegex = new Regex(@"^((?![c-zC-Z]).)*$");
 
         /// <summary>
         /// This method asks a question and expects only an int as answer.
@@ -56,7 +56,7 @@ namespace CargoTravelCalculator.Helpers
             string input = Console.ReadLine();
             while (condition(input) || input == "")
             {
-                WriteColorLine($"The {placeholder[0].ToString().ToLower()}{placeholder.Substring(1)} you gave {(placeholder[^1] == 's' ? "are" : "is")} incorrect, ({errorText})!\n", ConsoleColor.Red);
+                WriteColorLine($"The {placeholder[0].ToString().ToLower()}{placeholder[1..]} you gave {(placeholder[^1] == 's' ? "are" : "is")} incorrect, ({errorText})!\n", ConsoleColor.Red);
 
                 Console.Write($"{placeholder}: ");
                 input = Console.ReadLine();

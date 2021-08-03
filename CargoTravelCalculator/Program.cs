@@ -65,7 +65,7 @@ namespace CargoTravelCalculator
                         {
                             Console.Clear();
                             Console.WriteLine("Calculating sequences...\n");
-                            string[] sequences = input.Split(" ");
+                            string[] sequences = input.Split(' ');
 
                             for (int i = 0; i < sequences.Length; i++)
                             {

@@ -6,7 +6,7 @@ namespace CargoTravelCalculator.Models
     /// A place provided for a particular purpose.
     /// </summary>
     /// <remarks>
-    /// All the facilites in this project have a list of containers.
+    /// All the facilities in this project have a list of containers.
     /// </remarks>
     public class Facility
     {
